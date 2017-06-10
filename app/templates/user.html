@@ -1,0 +1,31 @@
+{% block page_content %}
+<div class="page-header">
+    <h1>{{user.email}}</h1>
+    {%if user.username or user.location%}
+    <p>
+        {%if user.username%}{{user.username}}{%endif%}
+        {%if user.location%}
+            From <a href="http://maps.google.com/?q={{user.location}}">
+            {{user.location}}
+            </a>
+        {%endif%}
+    </p>
+    <img class="img-rounded profile-thumbnail" src="{{ user.gravatar(size=256) }}"> 
+    {%endif%}
+    <p><a href="mailto::{{user.email}}">{{user.email}}</a></p>
+    {%if user==current_user%}
+    <a class="btn btn-default" href="{{url_for('.edit_profile')}}">Edit edit_profile
+    </a>
+    {%endif%}
+    {%if user.about_me%}<p>{{user.about_me}}</p>{%endif%}
+    <p>
+        Member since{{moment(user.member_since).format('L')}}
+        Last seen {{moment(user.last_seen).fromNow()}}
+    </p>
+    {%if current_user.is_administrator()%}
+    <a class="btn btn-danger" href="{{url_for('.edit_profile_admin',id=user.id)}}">
+        Edit Profile [Admin]
+    </a>
+    {%endif%}
+</div>
+{%endblock%}
