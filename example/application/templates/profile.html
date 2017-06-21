@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}个人主页{% endblock %}
+{% block css %}/static/styles/pages/profile.css{% endblock %}
+
+{% block content %}
+            {% for message in get_flashed_messages() %}
+              <div class = "alert alert-warning">
+                  <button type = "button" class = "close" data-dismiss="alert">&times;</button>
+                  {{message}}
+              </div>
+          {% endfor %}
+
+            <div class="page-main clearfix">
+                <article>
+                    <header class="profile-detail clearfix">
+                        <div class="profile-avatar">
+                            <img class="_8gpiy _r43r5 _f2b2t" src="{{user.head_url}}">
+                        </div>
+                        <div class="profile-content">
+                            <div class="profile-info-main" data-reactid=".0.1.0.0:0.1.0">
+                                <h1 class="name" title="taylorswift">{{user.username}}</h1>
+                                {% if current_user.id == user.id %}
+                                    <span class="verified" title="已验证">已验证</span>
+                                    <span class="_jxp6f _e616g" style="display:inline-block;position:relative;">
+                                        <form method="post" action="/upload/" enctype="multipart/form-data">
+                                            <button class="btn-success">上传图片</button>
+                                            <input name="file" type="file" onchange="this.parentNode.submit()" style="opacity:0;position:absolute;top:0;left:0;display:block;width:100%;height:100%;">
+                                        </form>
+                                    </span>
+                                    <button class="more-info">选项</button>
+                                {%endif%}
+                            </div>
+                            <!--<div class="profile-info-sub">-->
+                                <!--<h2>Taylor Swift</h2>-->
+                                <!--<span class="birth">Born in 1989.</span>-->
+                            <!--</div>-->
+                            <!--<ul class="status-list clearfix">-->
+                                <!--<li>-->
+                                    <!--<span class="s-title">已发帖 </span>-->
+                                    <!--<span class="s-num">909</span>-->
+                                <!--</li>-->
+                                <!--<li>-->
+                                    <!--<span class="s-num">909</span>-->
+                                    <!--<span class="s-title">人关注 </span>-->
+                                <!--</li>-->
+                                <!--<li>-->
+                                    <!--<span class="s-title">已关注 </span>-->
+                                    <!--<span class="s-num">909万</span>-->
+                                <!--</li>-->
+                            <!--</ul>-->
+                        </div>
+                    </header>
+                    <div class="list-mod">
+                        <div class="list clearfix js-image-list">
+                        <!--<div class="list clearfix">-->
+                            {% for image in images %}
+                            <a class="item" href="/image/{{image.id}}">
+                                <div class="img-box">
+                                    <img src="{{image.url}}">
+                                </div>
+                                <!--<span class="ico-video">视频</span>-->
+                                <!--<div class="img-mask"></div>-->
+                                <!--<div class="interaction-wrap">-->
+                                    <!--<div class="interaction-item"><i class="icon-comment"></i> 23214</div>-->
+                                <!--</div>-->
+                            </a>
+
+                            {% endfor %}
+                        </div>
+
+                        {% if has_next %}
+                        <!--<div class="more-content">-->
+                            <!--<a class="_oidfu" href="/taylorswift/?max_id=1229190628132188945">更多</a>-->
+                        <!--</div>-->
+                        <div class="more-content js-load-more">
+                            <a class="_oidfu" href="javascript:void(0);">更多</a>
+                        </div>
+                        {%else%}
+                            {% if not images %}
+                            这个用户比较懒， 还没有上传任何图片
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </article>
+            </div>
+{% endblock %}
+
+{% block js %}
+<script type="text/javascript">
+    window.uid = {{ user.id }};
+</script>
+<script type="text/javascript" src="/static/js/jquery.js"></script>
+<script type="text/javascript" src="/static/js/profile.js"></script>
+{% endblock%}

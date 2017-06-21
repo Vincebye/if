@@ -1,0 +1,5 @@
+Dear {{user.username}},<br>
+    To confirm your account please click on the following link:<br>
+    <a href="{{url_for('confirm', token=token, _external=True)}}">{{url_for('confirm', token=token, _external=True)}}</a><br>
+Sincerely,<br>
+The instagram_simulation team<br>
