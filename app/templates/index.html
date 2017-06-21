@@ -5,6 +5,10 @@
     <title>index</title>
 </head>
 <body>
-<h1>Hello World</h1>
+    {%for i in url_list%}
+    <ul>
+    <img width='164' src={{i}}>
+    </ul>
+    {%endfor%}
 </body>
 </html>

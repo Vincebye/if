@@ -1,4 +1,4 @@
-from flask import request,render_template,redirect,url_for,flash,abort
+from flask import request,render_template,redirect,url_for,flash,abort,jsonify
 from .forms import EditProfileForm,EditProfileAdminForm
 from . import main
 from .. import db
@@ -12,8 +12,11 @@ from ..decorators import admin_required, permission_required
 
 @main.route("/")
 def index():
-    #return "Hello World"
-    return render_template('index.html')
+    url_list=[]
+    picture=Picture.query.limit(2).all()
+    for i in picture:
+        url_list.append(i.url)
+    return render_template('index.html',url_list=url_list)
 
 @main.route("/user/<username>")
 def show_user_profile(username):
@@ -65,7 +68,7 @@ def edit_profile_admin(id):
 @login_required
 def upload():
     if request.method=='POST' and 'picture' in request.files:
-        filename = pictures.save(request.files['picture'])
+        filename = pictures.save(request.files['picture'],folder='./upload')
         fileurl=pictures.url(filename)
         pic=Picture(url=fileurl,user_id=current_user.id)
         db.session.add(pic)
@@ -78,4 +81,12 @@ def upload():
 def show(id):
     if name is None:
         abort(404)
+@main.route("/json",methods=['POST','GET'])
+def json():
+    try:
+        print data
+    except:
+        pass
+    print '++++++'
+    return jsonify(hits=3123123)
     
