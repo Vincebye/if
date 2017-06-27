@@ -1,13 +1,18 @@
-
 {% import "bootstrap/wtf.html" as wtf %}
+{% extends "base.html" %}
+{% block title %}注册{% endblock %}
+{% block css %}/static/styles/pages/login.css{% endblock %}
 
-{% block title %}Flasky - Register{% endblock %}
-
-{% block page_content %}
-<div class="page-header">
-    <h1>Register</h1>
-</div>
-<div class="col-md-4">
-    {{wtf.quick_form(form)}}
-</div>
+{% block content %}
+    {% for message in get_flashed_messages() %}    
+        <div class="alert alert-warning">        
+            <button type="button" class="close" data-dismiss="alert">×</button>        
+            {{ message }}    
+        </div>
+    {% endfor %}
+    <div id="form">
+        <div class="col-md-4">
+            {{ wtf.quick_form(form) }}
+        </div>
+    </div>
 {% endblock %}

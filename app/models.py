@@ -3,6 +3,7 @@ from werkzeug.security import generate_password_hash,check_password_hash
 from datetime import datetime
 from flask import request
 import hashlib
+import random
 from . import db
 from . import login_manager
 from flask_login import UserMixin
@@ -10,71 +11,72 @@ import json
 import uuid
 import hashlib
 
-class Permission:
-    FOLLOW=0x01
-    COMMIT=0x02
-    WRITE_ARTICLES=0x04
-    MODERATE_COMMENTS=0x08
-    ADMINISTER=0x80
 
-PROFILE_FILE="profile.json"
+class Comment(db.Model):
+    __tablename__='comments'
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.String(1024))
+    image_id = db.Column(db.Integer, db.ForeignKey('images.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    status = db.Column(db.Integer, default=0)  # 0 : normal, 1: deleted
+    user = db.relationship('User')
+
+    def __init__(self, content, image_id, user_id):
+        self.content = content
+        self.image_id = image_id
+        self.user_id = user_id
+
+    def __repr__(self):
+        return '<Comment %d, content = %s, user_id = %s, image_id = %s, status = %d' % (self.id, self.content, self.user_id, self.image_id, self.status)
+
+class Image(db.Model):
+    __tablename__='images'
+    id=db.Column(db.Integer,primary_key=True)
+    url=db.Column(db.String(512))
+    timestamp=db.Column(db.DateTime(),default=datetime.now)
+    user_id=db.Column(db.Integer,db.ForeignKey('users.id'))
+    comments=db.relationship('Comment')
+
+    def __init__(self,url,user_id):
+        self.url = url
+        self.user_id = user_id
+        
+    
+    def __repr__(self):
+        return '<Image %d, url = %s, user_id = %s, create_date = %s' % (self.id, self.url, self.user_id, self.timestamp)
 
 class User(UserMixin,db.Model):
-    # def __init__(self,**kwargs):
-    #     super(User,self).__init__(**kwargs)
-    #     if self.role is None:
-    #         if self.email==current_app.config['FLASK_ADMIN']:
-    #             self.role=Role.query.filter_by(permissions=0xff).first()
-    #         if self.role is None:
-    #             self.role=Role.query.filter_by(default=True).first()
-               
+ 
 
     __tablename__='users'
     id=db.Column(db.Integer,primary_key=True)
     email=db.Column(db.String(64),unique=True,index=True)
     username = db.Column(db.String(50),unique=True)
-    location=db.Column(db.String(64))
     member_since=db.Column(db.DateTime(),default=datetime.utcnow)
-    last_seen=db.Column(db.DateTime(),default=datetime.utcnow)
     password_hash=db.Column(db.String(128))
+    images = db.relationship('Image', backref='user', lazy = 'dynamic')
+    head_url = db.Column(db.String(256))  # 头像的url
     role_id=db.Column(db.Integer,db.ForeignKey('roles.id'))
     about_me=db.Column(db.Text())
-    avatar_hash=db.Column(db.String(32))
 
-    @staticmethod
-    def inser_user(email,username,password):
-        user=User(email=email,username=username,password=password)
-        db.session.add(user)
-        db.session.commit()
+    def __init__(self, email,username, password):
+        self.username = username
+        self.password = password
+        self.email = email
+        self.head_url = u'/static/yurisa/' + unicode(random.randint(0, 100)) + u'.jpg'
     
-    def __init__(self,**kwargs):
-        super(User, self).__init__(**kwargs)
-        if self.email is not None and self.avatar_hash is None:
-            self.avatar_hash=hashlib.md5(self.email.encode('utf-8')).hexdigest()
-    def change_email(self,token):
-        self.email=new_email
-        self.avatar_hash=hashlib.md5(self.email.encode('utf-8')).hexdigest()
-        db.session.add(self)
+    def __repr__(self):
+        return '%s'%(self.username)
+    @property
+    def is_authenticated(self):
         return True
 
-
-#d 图画风格类型, 可选值有
-#identicon 几何图形
-#monsterid 怪兽
-#wavatar 脸
-#retro 8-bit
-#f 当值为 y 时显示默认头像. 但当 d 有有效值时, f 失效.
-#s 尺寸
-#r 评级过滤
-
-
-    def gravatar(self,size=100,default='monsterid',rating='g'):
-        if request.is_secure:
-            url='https://secure.gravatar.com/avatar'
+    def is_admin(self):
+        if self.username!='admin':
+            return False
         else:
-            url='http://www.gravatar.com/avatar'
-        hash=hashlib.md5(self.email.encode('utf-8')).hexdigest()
-        return '{url}/{hash}?s={size}&d={default}&r={rating}'.format(url=url, hash=hash, size=size, default=default, rating=rating)
+            return True
+
     @property
     def password(self):
         raise AttributeError('password is not a readable attribute')
@@ -89,44 +91,3 @@ class User(UserMixin,db.Model):
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
-class Role(UserMixin,db.Model):
-    __tablename__='roles'
-    id=db.Column(db.Integer,primary_key=True)
-    username=db.Column(db.String(64),unique=True)
-    default=db.Column(db.Boolean,default=False,index=True)
-    permissions=db.Column(db.Integer)
-    users=db.relationship('User',backref='role',lazy='dynamic')
-
-    @staticmethod
-    def insert_roles():
-        roles={
-            'User':(Permission.FOLLOW|
-                    Permission.COMMIT|
-                    Permission.WRITE_ARTICLES,True),
-            'Moderator':(Permission.FOLLOW|
-                         Permission.COMMIT|
-                         Permission.WRITE_ARTICLES|
-                         Permission.MODERATE_COMMENTS,False),
-            'Adminstrator':(0xff,False)
-        }
-        for r in roles:
-            role=Role.query.filter_by(name=r).first()
-            if role is None:
-                role=Role(name=r)
-            role.permissions=roles[r][0]
-            role.default=roles[r][1]
-            db.session.add(role)
-        db.session.commit()
-
-class Picture(db.Model):
-    __tablename__='pictures'
-    id=db.Column(db.Integer,primary_key=True)
-    url=db.Column(db.String(128))
-    timestamp=db.Column(db.DateTime(),default=datetime.utcnow)
-    user_id=db.Column(db.Integer,db.ForeignKey('users.id'))
-
-    @staticmethod
-    def inser_picture(url,user_id):
-        picture=Picture(url=url,user_id=user_id)
-        db.session.add(picture)
-        db.session.commit()

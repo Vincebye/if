@@ -1,7 +1,7 @@
-{% extends "bootstrap/base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
-
-{% block title %}登录{% endblock %}
+{% extends "base.html" %}
+{% block title %}登陆{% endblock %}
+{% block css %}/static/styles/pages/login.css{% endblock %}
 
 {% block content %}
     {% for message in get_flashed_messages() %}    
@@ -23,3 +23,5 @@
         </a>
     </p>
 {% endblock %}
+
+

@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField,BooleanField,PasswordField,SubmitField,TextAreaField,SelectField
 from wtforms.validators import DataRequired,Length,Email,Regexp,EqualTo
-from ..models import Role,User
+from ..models import User
 
 class EditProfileForm(FlaskForm):
     username=StringField('Real name',validators=[Length(0,64)])
