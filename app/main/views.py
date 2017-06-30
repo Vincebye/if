@@ -1,7 +1,6 @@
 # -*- coding:utf8 -*-
 
 from flask import request,render_template,redirect,url_for,flash,abort,jsonify
-from .forms import EditProfileForm,EditProfileAdminForm
 from . import main
 from .. import db
 from .. import pictures
@@ -39,7 +38,6 @@ def index_paginate(page_num, per_page):
         image.append(imgov)
 
     map['images'] = image
-    print 'sad\n'
     return jsonify(map)
 
 

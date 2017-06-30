@@ -8,26 +8,6 @@ from .. import db
 from flask_login import login_user,login_required,LoginManager,current_user
 from ..models import User,Image,Comment
 
-#后台管理页面
-class MicroBlogModelView(ModelView):
-
-    def is_accessible(self):
-        return current_user.is_admin()
-
-    def inaccessible_callback(self, name, **kwargs):
-        # redirect to login page if user doesn't have access
-        return redirect(url_for('auth.login', next=request.url))
-
-class MyAdminIndexView(BaseView):
-    @expose('/',methods=['GET', 'POST'])
-    @login_required
-    def index(self):
-        return self.render('admin/index.html')
-    
-    @expose('/admin',methods=['GET', 'POST'])
-    @login_required
-    def index(self):
-        return self.render('admin/index.html')
 
 class UserView(ModelView):
     #自定义显示的columns名字

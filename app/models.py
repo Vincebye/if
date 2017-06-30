@@ -52,11 +52,10 @@ class User(UserMixin,db.Model):
     id=db.Column(db.Integer,primary_key=True)
     email=db.Column(db.String(64),unique=True,index=True)
     username = db.Column(db.String(50),unique=True)
-    member_since=db.Column(db.DateTime(),default=datetime.utcnow)
+    member_since=db.Column(db.DateTime(),default=datetime.now)
     password_hash=db.Column(db.String(128))
     images = db.relationship('Image', backref='user', lazy = 'dynamic')
     head_url = db.Column(db.String(256))  # 头像的url
-    role_id=db.Column(db.Integer,db.ForeignKey('roles.id'))
     about_me=db.Column(db.Text())
 
     def __init__(self, email,username, password):
